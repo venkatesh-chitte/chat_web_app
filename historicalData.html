@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historical Data</title>
+</head>
+<body>
+  <h1>Historical Data</h1>
+  <form id="dateForm">
+    <label for="startDate">Start Date:</label>
+    <input type="datetime-local" id="startDate" name="startDate" required>
+    <label for="endDate">End Date:</label>
+    <input type="datetime-local" id="endDate" name="endDate" required>
+    <button type="submit">Fetch Data</button>
+  </form>
+
+  <div id="historicalData"></div>
+
+  <script src="https://cdn.socket.io/4.1.3/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+
+    document.getElementById('dateForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      // Make API request to fetch historical data based on start and end dates
+      fetch(`/api/historicalData?startDate=${startDate}&endDate=${endDate}`)
+        .then(response => response.json())
+        .then(data => {
+          const historicalData = document.getElementById('historicalData');
+          historicalData.innerHTML = '<h2>Historical Data</h2>';
+          if (data.length === 0) {
+            historicalData.innerHTML += '<p>No historical data available.</p>';
+          } else {
+            const table = document.createElement('table');
+            table.innerHTML = '<tr><th>Temperature</th><th>Battery Level</th><th>Timestamp</th></tr>';
+            data.forEach(entry => {
+              const row = table.insertRow();
+              row.insertCell(0).textContent = entry.temperature;
+              row.insertCell(1).textContent = entry.batteryLevel;
+              row.insertCell(2).textContent = entry.timeStamp;
+            });
+            historicalData.appendChild(table);
+          }
+        })
+        .catch(error => console.error(error));
+    });
+  </script>
+</body>
+</html>
